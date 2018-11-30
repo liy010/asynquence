@@ -7,26 +7,26 @@
 	if (typeof define === "function" && define.amd) { define(definition); }
 	else if (typeof module !== "undefined" && module.exports) { module.exports = definition(); }
 	else { context[name] = definition(name,context); }
-})("ASQ",this,function DEF(name,context){
+})("ASQ",this,function DEF(name,context){  //function DEF 为一个函数，并当作参数传递给自执行函数 UMD
 	"use strict";
 
 	var cycle, scheduling_queue,
-		timer = (typeof setImmediate !== "undefined") ?
+		timer = (typeof setImmediate !== "undefined") ?   // 判断是node环境， 还是浏览器环境
 			function $$timer(fn) { return setImmediate(fn); } :
 			setTimeout
 	;
 
-	// Note: using a queue instead of array for efficiency
-	function Queue() {
+	// Note: using a queue instead of array for efficiency  // 使用队列而不是数组来提高效率
+	function Queue() {   // 模块模式
 		var first, last, item;
 
-		function Item(fn) {
+		function Item(fn) {  
 			this.fn = fn;
 			this.next = void 0;
 		}
 
 		return {
-			add: function $$add(fn) {
+			add: function $$add(fn) {   // 相当于是一个链表 [first, next] -> [next, next] -> [next, next] -> ··· -> [last]
 				item = new Item(fn);
 				if (last) {
 					last.next = item;
@@ -37,7 +37,7 @@
 				last = item;
 				item = void 0;
 			},
-			drain: function $$drain() {
+			drain: function $$drain() {  // 从链表里一个一个取出来
 				var f = first;
 				first = last = cycle = null;
 
@@ -49,16 +49,16 @@
 		};
 	}
 
-	scheduling_queue = Queue();
+	scheduling_queue = Queue();   // 初始化
 
 	function schedule(fn) {
 		scheduling_queue.add(fn);
-		if (!cycle) {
-			cycle = timer(scheduling_queue.drain);
+		if (!cycle) {   // init cycle at 42 line set null type
+			cycle = timer(scheduling_queue.drain);   // 把要执行的函数添加到调度器里, setTimeout 可以执行多个函数
 		}
 	}
 
-	function tapSequence(def) {
+	function tapSequence(def) {  // 
 		// temporary `trigger` which, if called before being replaced
 		// above, creates replacement proxy sequence with the
 		// success/error message(s) pre-injected
@@ -101,7 +101,7 @@
 	function createSequence() {
 
 		function scheduleSequenceTick() {
-			if (seq_aborted) {
+			if (seq_aborted) {   // 613 行用于停止任务的执行
 				sequenceTick();
 			}
 			else if (!seq_tick) {
@@ -680,11 +680,11 @@
 					extensions[name](sequence_api,internals);
 			});
 		}
-
-		var seq_error = false,
-			error_reported = false,
-			seq_aborted = false,
-			then_ready = true,
+        // 定义函数所使用的所有参数
+		var seq_error = false,   // 序列发生错误
+			error_reported = false,  // 是否错误报告
+			seq_aborted = false,  // 任务是否中止
+			then_ready = true,  // 
 
 			then_queue = [],
 			or_queue = [],
